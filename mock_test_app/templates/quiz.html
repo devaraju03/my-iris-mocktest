@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='quiz.css') }}">
+</head>
+<body>
+  <div class="quiz-container" id="quiz-container">
+    <div class="user-info">
+      👋 Welcome, {{ session['user']['name'] }}
+    </div>
+
+    <h2 class="question">Loading question...</h2>
+
+    <div class="options" id="options-container"></div>
+
+    <!-- Navigation Buttons -->
+    <button id="next-btn" class="quiz-btn">Next</button>
+    <button id="submit-btn" class="quiz-btn" style="display: none;">Submit</button>
+
+    <!-- Result Area -->
+    <div class="result" id="result"></div>
+  </div>
+
+  <!-- Hidden Logout Button (shown only after submission) -->
+  <form action="/logout" method="post" id="logout-form" style="display: none; text-align: center; margin-top: 20px;">
+    <button type="submit" class="logout-btn">Logout</button>
+  </form>
+
+  <script>
+    let questions = [];
+    let currentQuestion = 0;
+    let score = 0;
+
+    async function loadQuestions() {
+      const res = await fetch("/get_questions");
+      questions = await res.json();
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const container = document.getElementById("options-container");
+      const questionTitle = document.querySelector(".question");
+
+      const q = questions[currentQuestion];
+      questionTitle.textContent = `Q${currentQuestion + 1}: ${q.question}`;
+      container.innerHTML = "";
+
+      q.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => {
+          document.querySelectorAll(".options button").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+        };
+        container.appendChild(btn);
+      });
+
+      // Toggle visibility of buttons
+      document.getElementById("next-btn").style.display = currentQuestion < questions.length - 1 ? "block" : "none";
+      document.getElementById("submit-btn").style.display = currentQuestion === questions.length - 1 ? "block" : "none";
+    }
+
+    // Next Button Click
+    document.getElementById("next-btn").addEventListener("click", () => {
+      const selected = document.querySelector(".options button.selected");
+      if (!selected) {
+        alert("Please select an option!");
+        return;
+      }
+
+      if (selected.textContent === questions[currentQuestion].answer) score++;
+      currentQuestion++;
+      showQuestion();
+    });
+
+    // Submit Button Click
+    document.getElementById("submit-btn").addEventListener("click", () => {
+      const selected = document.querySelector(".options button.selected");
+      if (!selected) {
+        alert("Please select an option!");
+        return;
+      }
+
+      if (selected.textContent === questions[currentQuestion].answer) score++;
+
+      // Show final result
+      const quizContainer = document.getElementById("quiz-container");
+      quizContainer.innerHTML = `
+        <div class="result">
+          🎉 You scored ${score} out of ${questions.length}
+        </div>
+      `;
+
+      // Save score
+      fetch("/save_score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ score: score, total: questions.length })
+      });
+
+      // Show Logout button
+      document.getElementById("logout-form").style.display = "block";
+    });
+
+    loadQuestions();
+  </script>
+</body>
+</html>

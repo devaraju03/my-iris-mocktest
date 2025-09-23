@@ -1,0 +1,195 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Body */
+body {
+  background: linear-gradient(to right, #667eea, #764ba2);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #fff;
+}
+
+/* Quiz Container */
+.quiz-container {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 650px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1s ease;
+}
+
+/* User Info */
+.user-info {
+  font-size: 1.3rem;
+  margin-bottom: 25px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 14px 20px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 500;
+  animation: slideDown 0.5s ease;
+}
+
+/* Question */
+.question {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+/* Options */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.options button {
+  padding: 14px 22px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+}
+
+.options button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.03);
+}
+
+.options button.selected {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Buttons (Next & Submit) */
+.quiz-btn {
+  margin-top: 40px;
+  padding: 18px 35px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: bounceIn 0.6s ease;
+  box-shadow: 0 8px 20px rgba(0, 114, 255, 0.4);
+}
+
+.quiz-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 12px 24px rgba(0, 114, 255, 0.5);
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
+}
+
+.quiz-btn:active {
+  transform: scale(0.96);
+}
+
+/* Result */
+.result {
+  font-size: 1.6rem;
+  text-align: center;
+  margin-top: 30px;
+  animation: fadeIn 0.6s ease;
+}
+
+/*logout*/
+.logout-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #cc0000;
+}
+
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media screen and (max-width: 600px) {
+  .quiz-container {
+    padding: 25px;
+  }
+
+  .question {
+    font-size: 1.3rem;
+  }
+
+  .options button {
+    font-size: 1rem;
+  }
+
+  .quiz-btn {
+    font-size: 1.2rem;
+    padding: 16px 28px;
+    max-width: 100%;
+  }
+
+  .user-info {
+    font-size: 1.1rem;
+    padding: 10px 15px;
+  }
+}
