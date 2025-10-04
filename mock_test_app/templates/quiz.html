@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Quiz</title>
+  <title>Quiz (OMR Style)</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='quiz.css') }}">
 </head>
 <body>
@@ -11,83 +11,79 @@
       👋 Welcome, {{ session['user']['name'] }}
     </div>
 
-    <h2 class="question">Loading question...</h2>
+    <form id="quiz-form">
+      <div id="questions-container"></div>
+      <button type="submit" class="quiz-btn">Submit Answers</button>
+    </form>
 
-    <div class="options" id="options-container"></div>
-
-    <!-- Navigation Buttons -->
-    <button id="next-btn" class="quiz-btn">Next</button>
-    <button id="submit-btn" class="quiz-btn" style="display: none;">Submit</button>
-
-    <!-- Result Area -->
     <div class="result" id="result"></div>
   </div>
 
-  <!-- Hidden Logout Button (shown only after submission) -->
   <form action="/logout" method="post" id="logout-form" style="display: none; text-align: center; margin-top: 20px;">
     <button type="submit" class="logout-btn">Logout</button>
   </form>
 
   <script>
     let questions = [];
-    let currentQuestion = 0;
-    let score = 0;
 
     async function loadQuestions() {
       const res = await fetch("/get_questions");
       questions = await res.json();
-      showQuestion();
+      renderQuestions();
     }
 
-    function showQuestion() {
-      const container = document.getElementById("options-container");
-      const questionTitle = document.querySelector(".question");
-
-      const q = questions[currentQuestion];
-      questionTitle.textContent = `Q${currentQuestion + 1}: ${q.question}`;
+    function renderQuestions() {
+      const container = document.getElementById("questions-container");
       container.innerHTML = "";
 
-      q.options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.textContent = opt;
-        btn.onclick = () => {
-          document.querySelectorAll(".options button").forEach(b => b.classList.remove("selected"));
-          btn.classList.add("selected");
-        };
-        container.appendChild(btn);
-      });
+      questions.forEach((q, index) => {
+        const questionBlock = document.createElement("div");
+        questionBlock.classList.add("question-block");
 
-      // Toggle visibility of buttons
-      document.getElementById("next-btn").style.display = currentQuestion < questions.length - 1 ? "block" : "none";
-      document.getElementById("submit-btn").style.display = currentQuestion === questions.length - 1 ? "block" : "none";
+        const questionText = document.createElement("div");
+        questionText.classList.add("question-text");
+        questionText.textContent = `Q${index + 1}: ${q.question}`;
+        questionBlock.appendChild(questionText);
+
+        const optionsDiv = document.createElement("div");
+        optionsDiv.classList.add("options");
+
+        q.options.forEach((opt, i) => {
+          const optId = `q${index}_opt${i}`;
+
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `question_${index}`;
+          input.id = optId;
+          input.value = opt;
+
+          const label = document.createElement("label");
+          label.setAttribute("for", optId);
+          label.classList.add("omr-option");
+          label.textContent = String.fromCharCode(65 + i); // A, B, C, D
+
+          optionsDiv.appendChild(input);
+          optionsDiv.appendChild(label);
+        });
+
+        questionBlock.appendChild(optionsDiv);
+        container.appendChild(questionBlock);
+      });
     }
 
-    // Next Button Click
-    document.getElementById("next-btn").addEventListener("click", () => {
-      const selected = document.querySelector(".options button.selected");
-      if (!selected) {
-        alert("Please select an option!");
-        return;
-      }
+    document.getElementById("quiz-form").addEventListener("submit", (e) => {
+      e.preventDefault();
 
-      if (selected.textContent === questions[currentQuestion].answer) score++;
-      currentQuestion++;
-      showQuestion();
-    });
+      let score = 0;
 
-    // Submit Button Click
-    document.getElementById("submit-btn").addEventListener("click", () => {
-      const selected = document.querySelector(".options button.selected");
-      if (!selected) {
-        alert("Please select an option!");
-        return;
-      }
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="question_${index}"]:checked`);
+        if (selected && selected.value === q.answer) {
+          score++;
+        }
+      });
 
-      if (selected.textContent === questions[currentQuestion].answer) score++;
-
-      // Show final result
-      const quizContainer = document.getElementById("quiz-container");
-      quizContainer.innerHTML = `
+      document.getElementById("quiz-container").innerHTML = `
         <div class="result">
           🎉 You scored ${score} out of ${questions.length}
         </div>
@@ -100,7 +96,7 @@
         body: JSON.stringify({ score: score, total: questions.length })
       });
 
-      // Show Logout button
+      // Show logout button
       document.getElementById("logout-form").style.display = "block";
     });
 
