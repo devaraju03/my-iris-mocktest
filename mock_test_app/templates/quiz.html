@@ -59,8 +59,20 @@
 
           const label = document.createElement("label");
           label.setAttribute("for", optId);
-          label.classList.add("omr-option");
-          label.textContent = String.fromCharCode(65 + i); // A, B, C, D
+          label.classList.add("omr-label");
+
+          // Bubble circle
+          const bubble = document.createElement("span");
+          bubble.classList.add("omr-option");
+          bubble.textContent = String.fromCharCode(65 + i); // A, B, C, D
+
+          // Option text
+          const text = document.createElement("span");
+          text.classList.add("option-text");
+          text.textContent = opt;
+
+          label.appendChild(bubble);
+          label.appendChild(text);
 
           optionsDiv.appendChild(input);
           optionsDiv.appendChild(label);
