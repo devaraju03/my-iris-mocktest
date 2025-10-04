@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Quiz (OMR Style)</title>
+  <title>Quiz (OMR Grid Review with Tooltip)</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='quiz.css') }}">
 </head>
 <body>
@@ -61,12 +61,10 @@
           label.setAttribute("for", optId);
           label.classList.add("omr-label");
 
-          // Bubble circle
           const bubble = document.createElement("span");
           bubble.classList.add("omr-option");
-          bubble.textContent = String.fromCharCode(65 + i); // A, B, C, D
+          bubble.textContent = String.fromCharCode(65 + i);
 
-          // Option text
           const text = document.createElement("span");
           text.classList.add("option-text");
           text.textContent = opt;
@@ -87,18 +85,51 @@
       e.preventDefault();
 
       let score = 0;
+      const container = document.getElementById("quiz-container");
+
+      // Build review grid with tooltip
+      let reviewHTML = '<div class="review-grid">';
+      reviewHTML += `
+        <div class="grid-header">
+          <div>Question</div>
+          <div>A</div>
+          <div>B</div>
+          <div>C</div>
+          <div>D</div>
+        </div>
+      `;
 
       questions.forEach((q, index) => {
         const selected = document.querySelector(`input[name="question_${index}"]:checked`);
-        if (selected && selected.value === q.answer) {
-          score++;
-        }
+        const userAnswer = selected ? selected.value : 'Not answered';
+        const correctAnswer = q.answer;
+
+        if (userAnswer === correctAnswer) score++;
+
+        reviewHTML += `<div class="grid-row"><div class="grid-question">Q${index + 1}</div>`;
+
+        q.options.forEach((opt, i) => {
+          let bubbleClass = "omr-option";
+          if (opt === correctAnswer) bubbleClass += " correct";
+          if (opt === userAnswer && opt !== correctAnswer) bubbleClass += " wrong";
+
+          reviewHTML += `
+            <div>
+              <span class="${bubbleClass}" title="${opt}"></span>
+            </div>
+          `;
+        });
+
+        reviewHTML += `</div>`;
       });
 
-      document.getElementById("quiz-container").innerHTML = `
+      reviewHTML += '</div>';
+
+      container.innerHTML = `
         <div class="result">
           🎉 You scored ${score} out of ${questions.length}
         </div>
+        ${reviewHTML}
       `;
 
       // Save score
