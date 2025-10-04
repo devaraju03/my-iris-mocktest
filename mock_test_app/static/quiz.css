@@ -6,7 +6,7 @@ body {
 }
 
 .quiz-container {
-  max-width: 700px;
+  max-width: 900px;
   margin: auto;
   background: white;
   border-radius: 20px;
@@ -73,6 +73,33 @@ input[type="radio"]:checked + .omr-label .omr-option {
   border-color: #4CAF50;
 }
 
+.omr-option.correct {
+  background: #4CAF50 !important;
+  color: white;
+  border-color: #4CAF50;
+}
+
+.omr-option.wrong {
+  background: #e74c3c !important;
+  color: white;
+  border-color: #e74c3c;
+}
+
+/* Tooltip effect */
+.omr-option[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  top: -35px;
+  white-space: nowrap;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 10;
+}
+
 .quiz-btn {
   display: block;
   width: 100%;
@@ -93,7 +120,7 @@ input[type="radio"]:checked + .omr-label .omr-option {
 .result {
   font-size: 22px;
   text-align: center;
-  margin-top: 20px;
+  margin-bottom: 20px;
   font-weight: bold;
 }
 
@@ -109,4 +136,35 @@ input[type="radio"]:checked + .omr-label .omr-option {
 
 .logout-btn:hover {
   background: #c0392b;
+}
+
+/* Grid Review */
+.review-grid {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.grid-header, .grid-row {
+  display: grid;
+  grid-template-columns: 1fr repeat(4, 60px);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.grid-header div {
+  font-weight: bold;
+  text-align: center;
+}
+
+.grid-question {
+  font-weight: 600;
+  padding-left: 10px;
+}
+
+.grid-row div {
+  display: flex;
+  justify-content: center;
+  position: relative; /* For tooltip positioning */
 }
