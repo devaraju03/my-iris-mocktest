@@ -11,10 +11,7 @@ app.secret_key = 'your_secret_key'  # Change this in production!
 # ---------------------------
 # MongoDB Setup
 # ---------------------------
-MONGO_URL = os.environ.get(
-    "MONGO_URL",
-    "mongodb+srv://Devadmin:Deva12345@cluster0.ksu03kd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-)
+
 client = MongoClient(MONGO_URL)
 db = client["mocktest"]  # Database name
 users_col = db["users"]
@@ -168,3 +165,4 @@ def reset_password():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
