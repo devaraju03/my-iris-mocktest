@@ -1,12 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash, get_flashed_messages
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import random
 import fitz  # PyMuPDF
 import re
-import json
 import os
+from pymongo import MongoClient
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this in production!
+
+# ---------------------------
+# MongoDB Setup
+# ---------------------------
+MONGO_URL = os.environ.get(
+    "MONGO_URL",
+    "mongodb+srv://Devadmin:Deva12345@cluster0.ksu03kd.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+)
+client = MongoClient(MONGO_URL)
+db = client["mocktest"]  # Database name
+users_col = db["users"]
+scores_col = db["scores"]
 
 # ---------------------------
 # Utility Functions
@@ -41,18 +53,6 @@ def extract_questions_from_pdf(pdf_path):
 
     return questions
 
-def load_users():
-    if os.path.exists('users.json'):
-        with open('users.json', 'r') as f:
-            return json.load(f)
-    return {}
-
-def save_user(email, name, password):
-    users = load_users()
-    users[email] = {"name": name, "password": password}
-    with open('users.json', 'w') as f:
-        json.dump(users, f, indent=4)
-
 # ---------------------------
 # Routes
 # ---------------------------
@@ -67,22 +67,26 @@ def register():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
-        users = load_users()
-        if email in users:
+
+        # Check if user already exists
+        if users_col.find_one({"email": email}):
             return "User already exists. Try logging in."
-        save_user(email, name, password)
+
+        users_col.insert_one({"name": name, "email": email, "password": password})
         return redirect(url_for('login'))
+
     return render_template('register.html')
 
 @app.route('/login', methods=['POST'])
 def do_login():
     email = request.form['email']
     password = request.form['password']
-    users = load_users()
-    user = users.get(email)
+
+    user = users_col.find_one({"email": email})
     if user and user['password'] == password:
-        session['user'] = {"email": email, "name": user['name']}
+        session['user'] = {"email": user['email'], "name": user['name']}
         return redirect(url_for('quiz'))
+
     return "Invalid credentials. Try again."
 
 @app.route('/quiz')
@@ -112,17 +116,7 @@ def save_score():
         "total": data.get("total")
     }
 
-    scores_file = "scores.json"
-    if os.path.exists(scores_file):
-        with open(scores_file, "r") as f:
-            scores = json.load(f)
-    else:
-        scores = []
-
-    scores.append(entry)
-
-    with open(scores_file, "w") as f:
-        json.dump(scores, f, indent=4)
+    scores_col.insert_one(entry)
 
     return jsonify({"status": "success", "message": "Score saved!"})
 
@@ -130,7 +124,6 @@ def save_score():
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
-
 
 # ---------------------------
 # Forgot Password Flow
@@ -140,8 +133,8 @@ def logout():
 def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
-        users = load_users()
-        if email in users:
+        user = users_col.find_one({"email": email})
+        if user:
             session['reset_email'] = email
             return redirect(url_for('reset_password'))
         else:
@@ -161,15 +154,11 @@ def reset_password():
             return "Passwords do not match. Try again."
 
         email = session['reset_email']
-        users = load_users()
-        users[email]['password'] = new_password
-        with open('users.json', 'w') as f:
-            json.dump(users, f, indent=4)
+        users_col.update_one({"email": email}, {"$set": {"password": new_password}})
 
         session.pop('reset_email')
         flash("Password updated successfully. You can now login.")
         return redirect(url_for('login'))
-
 
     return render_template('reset_password.html')
 
